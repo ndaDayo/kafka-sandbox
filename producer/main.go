@@ -8,7 +8,7 @@ import (
 
 func main() {
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": "localhost:9092",
+		"bootstrap.servers": "localhost:9092,localhost:9093,localhost:9094",
 	})
 
 	if err != nil {
@@ -31,7 +31,7 @@ func main() {
 	}()
 
 	topic := "myTopic"
-	for _, word := range []string{"Hello", "ndaDayo"} {
+	for _, word := range []string{"Myname", "is", "ndaDayo"} {
 		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Value:          []byte(word),
