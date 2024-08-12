@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -17,7 +18,20 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Consumer started...")
-	defer c.Close()
+	err = c.SubscribeTopics([]string{"myTopic", "^aRegex.*[Tt]opic"}, nil)
 
+	if err != nil {
+		panic(err)
+	}
+
+	run := true
+
+	for run {
+		msg, err := c.ReadMessage(time.Second)
+		if err == nil {
+			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
+		}
+	}
+
+	c.Close()
 }
