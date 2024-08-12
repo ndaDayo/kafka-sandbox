@@ -1,7 +1,8 @@
 # kafka-sandbox
 
-## kafka-ui 
+## Comman
 
+### topic
 ```
-docker run -it -p 8080:8080 -e DYNAMIC_CONFIG_ENABLED=true provectuslabs/kafka-ui
+kafka-topics --bootstrap-server <broker_address>:<port> --describe --topic <topic_name>
 ```
