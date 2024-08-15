@@ -99,13 +99,26 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
 
-  cli:
-    image: confluentinc/cp-kafka:latest
-    hostname: cli
-    container_name: cli
+  producer:
+    build:
+      context: ./producer
+    container_name: producer
     depends_on:
       - broker1
       - broker2
       - broker3
-    entrypoint: /bin/sh
-    tty: true
+    environment:
+      KAFKA_BROKERS: "broker1:29092,broker2:29093,broker3:29094"
+    command: /usr/local/bin/app
+
+  consumer:
+    build:
+      context: ./consumer
+    container_name: consumer
+    depends_on:
+      - broker1
+      - broker2
+      - broker3
+    environment:
+      KAFKA_BROKERS: "broker1:29092,broker2:29093,broker3:29094"
+    command: /usr/local/bin/app
