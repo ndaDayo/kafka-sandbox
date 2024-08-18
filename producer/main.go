@@ -2,22 +2,22 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"os"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
 func main() {
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": "broker1:29092,broker2:29093,broker3:29094",
+		"bootstrap.servers": "broker:29092",
 	})
 
 	if err != nil {
-		panic(err)
+		fmt.Printf("Failed to create producer: %s\n", err)
+		os.Exit(1)
 	}
 
 	defer p.Close()
-
 	go func() {
 		for e := range p.Events() {
 			switch ev := e.(type) {
@@ -31,21 +31,12 @@ func main() {
 		}
 	}()
 
-	topic := "first-app"
-	for i := 1; i <= 100; i++ {
-		key := i
-		value := strconv.Itoa(i)
-
-		record := &kafka.Message{
+	topic := "myTopic"
+	for _, word := range []string{"Hello!!!!!", "ndaDayo!!!!"} {
+		p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Key:            []byte(strconv.Itoa(key)),
-			Value:          []byte(value),
-		}
-
-		err := p.Produce(record, nil)
-		if err != nil {
-			fmt.Printf("Produce failed: %v\n", err)
-		}
+			Value:          []byte(word),
+		}, nil)
 	}
 
 	p.Flush(15 * 1000)
