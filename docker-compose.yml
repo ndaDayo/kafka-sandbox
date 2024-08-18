@@ -53,6 +53,11 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker1:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    healthcheck:
+      test: ["CMD", "nc", "-z", "broker1", "29092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   broker2:
     image: confluentinc/cp-kafka:latest
@@ -71,7 +76,12 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker2:29093,PLAINTEXT_HOST://localhost:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-
+    healthcheck:
+      test: ["CMD", "nc", "-z", "broker2", "29093"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      
   broker3:
     image: confluentinc/cp-kafka:latest
     hostname: broker3
@@ -89,21 +99,32 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker3:29094,PLAINTEXT_HOST://localhost:9094
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    healthcheck:
+      test: ["CMD", "nc", "-z", "broker3", "29094"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   producer:
     build:
       context: ./producer
     container_name: producer
     depends_on:
-      - broker1
-      - broker2
-      - broker3
+      broker1:
+        condition: service_healthy
+      broker2:
+        condition: service_healthy
+      broker3:
+        condition: service_healthy
 
   consumer:
     build:
       context: ./consumer
     container_name: consumer
     depends_on:
-      - broker1
-      - broker2
-      - broker3
+      broker1:
+        condition: service_healthy
+      broker2:
+        condition: service_healthy
+      broker3:
+        condition: service_healthy
