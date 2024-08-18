@@ -45,13 +45,12 @@ services:
       - zookeeper2
       - zookeeper3
     ports:
-      - "9092:9092"
       - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:32181,zookeeper2:32181,zookeeper3:32181"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker1:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker1:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     healthcheck:
       test: ["CMD", "nc", "-z", "broker1", "29092"]
@@ -68,13 +67,12 @@ services:
       - zookeeper2
       - zookeeper3
     ports:
-      - "9093:9093"
       - "29093:29093"
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:32181,zookeeper2:32181,zookeeper3:32181"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker2:29093,PLAINTEXT_HOST://localhost:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker2:29093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     healthcheck:
       test: ["CMD", "nc", "-z", "broker2", "29093"]
@@ -91,13 +89,12 @@ services:
       - zookeeper2
       - zookeeper3
     ports:
-      - "9094:9094"
       - "29094:29094"
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:32181,zookeeper2:32181,zookeeper3:32181"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker3:29094,PLAINTEXT_HOST://localhost:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker3:29094
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
     healthcheck:
       test: ["CMD", "nc", "-z", "broker3", "29094"]
