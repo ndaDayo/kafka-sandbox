@@ -9,7 +9,7 @@ import (
 
 func main() {
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": "broker:29092",
+		"bootstrap.servers": "broker1:29092",
 	})
 
 	if err != nil {
