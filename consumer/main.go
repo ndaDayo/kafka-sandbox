@@ -9,7 +9,7 @@ import (
 
 func main() {
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": "broker:29092",
+		"bootstrap.servers": "broker1:29092,broker2:29093,broker3:29094",
 		"group.id":          "myGroup",
 		"auto.offset.reset": "earliest",
 	})
@@ -18,8 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	err = c.SubscribeTopics([]string{"myTopic", "^aRegex.*[Tt]opic"}, nil)
-
+	err = c.SubscribeTopics([]string{"first-app"}, nil)
 	if err != nil {
 		panic(err)
 	}
