@@ -1,117 +1,87 @@
 version: "3.7"
 services:
-  zookeeper1:
+  zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    hostname: zookeeper1
-    container_name: zookeeper1
+    hostname: zookeeper
+    container_name: zookeeper
     ports:
       - "32181:32181"
     environment:
-      ZOOKEEPER_SERVER_ID: 1
       ZOOKEEPER_CLIENT_PORT: 32181
       ZOOKEEPER_TICK_TIME: 2000
-      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
 
-  zookeeper2:
-    image: confluentinc/cp-zookeeper:latest
-    hostname: zookeeper2
-    container_name: zookeeper2
-    ports:
-      - "32182:32181"
-    environment:
-      ZOOKEEPER_SERVER_ID: 2
-      ZOOKEEPER_CLIENT_PORT: 32181
-      ZOOKEEPER_TICK_TIME: 2000
-      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
-
-  zookeeper3:
-    image: confluentinc/cp-zookeeper:latest
-    hostname: zookeeper3
-    container_name: zookeeper3
-    ports:
-      - "32183:32181"
-    environment:
-      ZOOKEEPER_SERVER_ID: 3
-      ZOOKEEPER_CLIENT_PORT: 32181
-      ZOOKEEPER_TICK_TIME: 2000
-      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
-
-  broker1:
+  broker:
     image: confluentinc/cp-kafka:latest
-    hostname: broker1
-    container_name: broker1
+    hostname: broker
+    container_name: broker
     depends_on:
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
+      - zookeeper
     ports:
+      - "9092:9092"
       - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:32181,zookeeper2:32181,zookeeper3:32181"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:32181"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker1:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
     healthcheck:
-      test: ["CMD", "nc", "-z", "broker1", "29092"]
+      test: ["CMD", "nc", "-z", "broker", "29092"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  broker2:
-    image: confluentinc/cp-kafka:latest
-    hostname: broker2
-    container_name: broker2
+  schema_registry:
+    image: confluentinc/cp-schema-registry:latest
+    hostname: schema_registry
+    container_name: schema_registry
     depends_on:
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
+      - zookeeper
+      - broker
     ports:
-      - "29093:29093"
+      - "8081:8081"
     environment:
-      KAFKA_BROKER_ID: 2
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:32181,zookeeper2:32181,zookeeper3:32181"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker2:29093
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-    healthcheck:
-      test: ["CMD", "nc", "-z", "broker2", "29093"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      
-  broker3:
-    image: confluentinc/cp-kafka:latest
-    hostname: broker3
-    container_name: broker3
+      SCHEMA_REGISTRY_HOST_NAME: schema_registry
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:32181'
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: 'GET,POST,PUT,OPTIONS'
+
+  connect:
+    image: confluentinc/cp-kafka-connect:3.3.0
+    hostname: connect
+    container_name: connect
     depends_on:
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
+      - zookeeper
+      - broker
+      - schema_registry
     ports:
-      - "29094:29094"
+      - "8083:8083"
     environment:
-      KAFKA_BROKER_ID: 3
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:32181,zookeeper2:32181,zookeeper3:32181"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker3:29094
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-    healthcheck:
-      test: ["CMD", "nc", "-z", "broker3", "29094"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      CONNECT_BOOTSTRAP_SERVERS: 'broker:29092'
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: compose-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:32181'
 
   producer:
     build:
       context: ./producer
     container_name: producer
     depends_on:
-      broker1:
-        condition: service_healthy
-      broker2:
-        condition: service_healthy
-      broker3:
+      broker:
         condition: service_healthy
 
   consumer:
@@ -119,9 +89,5 @@ services:
       context: ./consumer
     container_name: consumer
     depends_on:
-      broker1:
-        condition: service_healthy
-      broker2:
-        condition: service_healthy
-      broker3:
+      broker:
         condition: service_healthy
