@@ -76,18 +76,18 @@ services:
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:32181'
 
-  producer:
+  zaiko:
     build:
-      context: ./producer
-    container_name: producer
+      context: ./zaiko
+    container_name: zaiko
     depends_on:
       broker:
         condition: service_healthy
 
-  consumer:
+  ec:
     build:
-      context: ./consumer
-    container_name: consumer
+      context: ./ec
+    container_name: ec
     depends_on:
       broker:
         condition: service_healthy
