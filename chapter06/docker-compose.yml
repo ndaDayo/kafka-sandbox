@@ -104,6 +104,7 @@ services:
         #
         sleep infinity
     volumes:
+      - ./connectors:/etc/kafka-connect/jars
       - ./data:/data
   kafka-connect-02:
     image: confluentinc/cp-kafka-connect:5.4.0-beta1
@@ -151,6 +152,7 @@ services:
         #
         sleep infinity
     volumes:
+      - ./connectors:/etc/kafka-connect/jars
       - ./data:/data
 
   kafka-connect-03:
@@ -199,4 +201,5 @@ services:
         #
         sleep infinity
     volumes:
+      - ./connectors:/etc/kafka-connect/jars
       - ./data:/data
