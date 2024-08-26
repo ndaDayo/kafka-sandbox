@@ -12,23 +12,6 @@ services:
     depends_on:
       - zookeeper
     ports:
-    # "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-
-    # An important note about accessing Kafka from clients on other machines: 
-    # -----------------------------------------------------------------------
-    #
-    # The config used here exposes port 9092 for _external_ connections to the broker
-    # i.e. those from _outside_ the docker network. This could be from the host machine
-    # running docker, or maybe further afield if you've got a more complicated setup. 
-    # If the latter is true, you will need to change the value 'localhost' in 
-    # KAFKA_ADVERTISED_LISTENERS to one that is resolvable to the docker host from those 
-    # remote clients
-    #
-    # For connections _internal_ to the docker network, such as from other services
-    # and components, use kafka:29092.
-    #
-    # See https://rmoff.net/2018/08/02/kafka-listeners-explained/ for details
-    # "`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-'"`-._,-
-    #
       - 9092:9092
     environment:
       KAFKA_BROKER_ID: 1
@@ -70,7 +53,7 @@ services:
     environment:
       CONNECT_BOOTSTRAP_SERVERS: "kafka:29092"
       CONNECT_REST_PORT: 8083
-      CONNECT_REST_ADVERTISED_HOST_NAME: "foobar1"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect-01"
       CONNECT_GROUP_ID: kafka-connect-groupA
       CONNECT_CONFIG_STORAGE_TOPIC: _kafka-connect-groupA-configs
       CONNECT_OFFSET_STORAGE_TOPIC: _kafka-connect-groupA-offsets
@@ -106,6 +89,7 @@ services:
     volumes:
       - ./connectors:/etc/kafka-connect/jars
       - ./data:/data
+
   kafka-connect-02:
     image: confluentinc/cp-kafka-connect:5.4.0-beta1
     container_name: kafka-connect-02
@@ -128,7 +112,7 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_REST_ADVERTISED_HOST_NAME: "foobar2"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect-02"
       CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
       CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
@@ -177,7 +161,7 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_REST_ADVERTISED_HOST_NAME: "foobar3"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect-03"
       CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
       CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
